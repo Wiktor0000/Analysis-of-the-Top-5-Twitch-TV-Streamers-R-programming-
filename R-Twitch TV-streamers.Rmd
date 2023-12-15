@@ -1,0 +1,289 @@
+---
+title: "Analysis of the Top 5 Twitch TV Streamers"
+author: "Wiktor Musiałowski"
+output:
+  html_document:
+    df_print: kable
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+    css: styles.css
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+<style>
+
+.title, .author {
+  color: #CD5B45
+}
+
+body {
+  background-color: #333;
+  color: #fff;
+}
+
+h1 {
+  color: #00688b;
+}
+
+h2 {
+  color: #98F5FF;
+}
+
+h3 {
+    color: #38b6f1;
+}
+
+body.toc-sidebar {
+  background-color: #e0e0e0;  
+}
+
+
+
+.tocify-item {
+  background-color: #8F8F8F;
+}
+
+.tocify-item {
+  color: #00688b;  
+}
+
+</style>
+
+<div style="text-align: center;">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Twitch_logo.svg/455px-Twitch_logo.svg.png?20150410204019" alt="Twitch Logo" style="display: inline-block;">
+</div>
+
+
+# 1. Introduction
+
+The project revolves around the examination of the top 5 most popular streamers on the Twitch TV platform. Various elements are being analyzed, including:
+Total Followers,
+Watch Time,
+Languages,
+Followers Gained.
+
+# 2. Loading packages and data.
+
+```{r warning = FALSE, message = FALSE}
+library(tidyverse, scales)
+library(RColorBrewer)
+library(viridisLite)
+library(ggplot2)
+library(plotrix)
+
+streamers <- read.csv("https://gist.githubusercontent.com/MUSIALBAR/a0d6d4d37f89ab795a02aebfafbcf37e/raw/a9ed5d2c72dce4f3984ba91bac22530e8de80946/twitch?fbclid=IwAR0h6ywiOnPL681kInhSnSllyWo_C5c9rDIApN2Xc-FdAzzMHRgIpcl7890")
+
+```
+
+### 2.1 Data modification.
+
+```{r warning = FALSE, message = FALSE}
+
+#Changing column names.
+
+new_word <- c("channel", "watch_time", "stream_time", "peak_viewers", "average_viewers", "total_followers", "followers_gained", "views_gained", "partnered", "mature", "language")
+colnames(streamers) <- new_word
+
+#Removing unnecessary column.
+
+streamers <- subset(streamers, select = -mature)
+
+#Adding an additional column named "rank".
+
+streamers <- cbind(rank = seq(1, 1000), streamers)
+```
+
+### 2.2 Variable overview.
+
+Each time value is expressed in minutes.
+
+Rank: this variable indicates the position or ranking of the channel on the list of the top 1000 channels on the Twitch TV platform. A lower number signifies a higher position in the ranking.
+
+Channel: this variable represents the registered channel name on the Twitch TV platform, allowing for the unique identification of each channel.
+
+Watch_time (minutes): the variable represents the cumulative time, in minutes, that users have spent watching content on the Twitch platform.
+
+Stream_time (minutes): refers to the total duration, in minutes, during which a streamer has been actively broadcasting content on a platform, such as Twitch. This metric captures the overall length of time a streamer has been live and engaging with their audience.
+
+Peak_viewers: it typically refers to the maximum number of concurrent viewers reached during a live stream or a specific time period
+
+Average_viewers: it represents the mean or average number of people watching a live stream at any given moment over a defined period, such as an entire stream session, an hour, or a day.
+
+Total_followers: refers to the complete count of followers that a channel has amassed from its inception or start date until the current point in time.
+
+Followers_gained: this metric measures the growth of a channel's audience during the specified one-year period.
+
+Views_gained: refers to the total number of views that a channel or content creator has accumulated over the course of a specific one-year period.
+
+Partnered: refers to a special partnership program offered to selected and trusted content creators. Being a Twitch partner means that a particular channel has met specific criteria and gained access to various benefits and tools that support its growth.
+
+Language: refers to the primary language in which a content creator conducts their live broadcasts or streams.
+
+
+
+# 3. Total Followers - For The Top 5 Twitch TV Streamers.
+
+I am narrowing down the dataset to the top 5 most popular streamers on the Twitch TV platform in terms of Total Followers.
+
+```{r}
+
+top_5 <- head(streamers[order(streamers$total_followers, decreasing = TRUE), ],5)
+top_5
+
+```
+
+
+### 3.1 Creating a chart.
+
+
+```{r}
+
+
+chart_1 <- ggplot(top_5, 
+  aes(x = reorder(channel, -total_followers), y = total_followers)) +
+  geom_bar(stat = "identity", fill = "darkslateblue", color = "gray10") +
+  geom_text(aes(label = total_followers), vjust = -0.5, color = "white") +
+  labs(title = "The total number of observations in the top 5 Twitch TV streamers",
+       x = "Channel name",
+       y = "The total number of observations") +
+  scale_y_continuous(labels = scales::comma) + theme_minimal() + 
+  theme(
+  plot.title = element_text(hjust = 0.5, color = "white"),
+    axis.title = element_text(color = "white"),
+    axis.text = element_text(color = "white"),
+    plot.background = element_rect(fill = "gray20"), 
+    panel.grid = element_blank())
+
+print(chart_1)
+
+
+```
+
+
+The chart presents a comparison of the top 5 streamers on the Twitch TV platform in terms of Total Followers. In the first place is Tfue, who has amassed nearly 9 million total followers. In the second position is shroud with over 7 million total followers. Following them are Myth, Rubius, and pokimane.
+
+
+# 4. Watch Time - For The Top 5 Twitch TV Streamers.
+
+
+
+
+I am narrowing down the dataset to the top 5 most popular streamers on the Twitch TV platform in terms of Watch Time.
+
+
+```{r}
+
+top_5_watch_time <- head(streamers[order(streamers$watch_time, decreasing = TRUE),],5)
+top_5_watch_time
+
+```
+### 4.1 Creating a chart.
+
+```{r}
+chart_2 <- ggplot(top_5_watch_time, 
+  aes(x = reorder(channel, -watch_time), y = watch_time)) +
+  geom_bar(stat = "identity", fill = "darkslateblue", color = "gray10") +
+  geom_text(aes(label = watch_time), vjust = -0.5, color = "white") +
+  labs(title ="Total viewing time for the top 5 Twitch TV streamers",
+       x = "Channel name",
+       y = "Total viewing time") +
+  scale_y_continuous(labels = scales::comma) + theme_minimal() + 
+  theme(
+      plot.title = element_text(hjust = 0.5, color = "white"),
+    axis.title = element_text(color = "white"),
+    axis.text = element_text(color = "white"),
+    plot.background = element_rect(fill = "gray20"), 
+    panel.grid = element_blank())
+
+print(chart_2)
+
+
+```
+
+
+A ranking of the top 5 streamers on the Twitch TV platform based on watch time.
+
+
+# 5. Streaming language structure (creating a chart).
+
+```{r}
+
+language_counts <- table(streamers$language)
+
+top_languages <- head(sort(language_counts, decreasing = TRUE), 3)
+
+language_percentages <- prop.table(top_languages) * 100
+
+my_colors <- c("darkslateblue", "palegreen", "firebrick")
+
+par(
+  bg = "gray20", 
+    col.lab = "white", 
+    col.main = "white")
+pie(
+  language_percentages, 
+  labels = paste(names(language_percentages), 
+  sprintf("%.1f%%", language_percentages)), 
+  col = my_colors,
+  main = "Structure of the Top 3 Languages (Percentage-wise)")
+
+
+
+
+```
+
+
+
+
+The chart depicts the structure of the top 3 languages used by the top 1000 streamers.
+
+# 6. Followers Gained - For The Top 5 Twitch TV Streamers.
+
+
+I am narrowing down the dataset to the top 5 most popular streamers on the Twitch TV platform in terms of Followers Gained.
+
+
+```{r}
+
+top_5_followers_gained <- head(streamers[order(streamers$followers_gained, decreasing = TRUE),],5)
+top_5_followers_gained
+
+
+
+```
+
+### 6.1 Creating a chart.
+
+```{r}
+
+chart_3 <- ggplot(top_5_followers_gained, 
+  aes(x = reorder(channel, -followers_gained), y = followers_gained)) +
+  geom_bar(stat = "identity", fill = "darkslateblue", color = "gray10") +
+  geom_text(aes(label = followers_gained), vjust = -0.5, color = "white") +
+  labs(title ="Total followers gained for the top 5 Twitch TV streamers",
+       x = "Channel name",
+       y = "Followers gained") +
+  scale_y_continuous(labels = scales::comma) + theme_minimal() +  
+  theme(
+    plot.title = element_text(hjust = 0.5, color = "white"),
+    axis.title = element_text(color = "white"),
+    axis.text = element_text(color = "white"),
+    plot.background = element_rect(fill = "gray20"), 
+    panel.grid = element_blank())
+
+chart_3
+
+```
+
+
+# 6. Summary
+
+The project focuses on analyzing the top five most popular streamers on the Twitch TV platform, taking into account various aspects such as the number of followers, watch time, languages, and new followers gained. The project visualizes significant data related to the most popular creators on Twitch TV, aiding in understanding the diversity and scale of their popularity based on various criteria.
+
+
+
+
+
